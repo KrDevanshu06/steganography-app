@@ -64,16 +64,15 @@ steganography_app/
 ## License
 
 This project is licensed under the MIT License.
-```
 
 ---
 
-#### `images/` Folder
+### `images/` Folder
 
 Place your sample images (e.g., `sample_input.png` and optionally `encoded_sample.png`) in this folder. These images are used for testing and demonstration purposes.
 
 ---
 
-#### `saved_images/` Folder
+### `saved_images/` Folder
 
 This folder is intended for storing user-uploaded or processed images if needed. It can remain empty initially.
