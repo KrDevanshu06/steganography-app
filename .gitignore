@@ -10,4 +10,3 @@
 *.sw?
 *.env
 .env
-venv/*
