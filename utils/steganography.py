@@ -1,21 +1,29 @@
 import struct
 from PIL import Image
 import io
+import json
 
-def encode_image(image_file, message_bytes):
+def encode_image(image_file, secret_message, password):
     """
-    Encodes a message into an image using LSB steganography.
+    Encodes a secret message and a password into an image using LSB steganography.
     The input image is provided as a file-like object.
     Returns a BytesIO object with the encoded image.
     """
+    # Combine password and message into a JSON object
+    data_dict = {
+        "password": password,
+        "message": secret_message
+    }
+    combined_data = json.dumps(data_dict).encode('utf-8')
+
     image = Image.open(image_file)
     image = image.convert("RGB")
     width, height = image.size
     pixels = list(image.getdata())
 
-    message_length = len(message_bytes) * 8  # Length in bits
+    message_length = len(combined_data) * 8  # Length in bits
     header = struct.pack('>I', message_length)  # 4-byte header (big-endian)
-    data = header + message_bytes
+    data = header + combined_data
 
     # Convert data to list of bits (MSB first)
     data_bits = []
@@ -41,20 +49,21 @@ def encode_image(image_file, message_bytes):
             b = (b & 0xFE) | data_bits[data_index]
             data_index += 1
         new_pixels.append((r, g, b))
-    
+
     encoded_image = Image.new("RGB", (width, height))
     encoded_image.putdata(new_pixels)
-    
+
     # Save the encoded image to a BytesIO buffer
     buffer = io.BytesIO()
     encoded_image.save(buffer, format="PNG")
     buffer.seek(0)
     return buffer
 
-def decode_image(image_file):
+def decode_image(image_file, password):
     """
     Decodes a hidden message from an image using LSB steganography.
     The input image is provided as a file-like object.
+    Validates the password before returning the hidden message.
     """
     image = Image.open(image_file)
     image = image.convert("RGB")
@@ -93,4 +102,15 @@ def decode_image(image_file):
             byte = (byte << 1) | bit
         message_bytes.append(byte)
 
-    return bytes(message_bytes)
+    # Parse the JSON data
+    try:
+        data_str = message_bytes.decode('utf-8')
+        data_dict = json.loads(data_str)
+    except Exception:
+        raise ValueError("Failed to decode message. The image may not contain a valid encoded message.")
+
+    # Validate password
+    if data_dict.get("password") != password:
+        raise ValueError("Incorrect password. Unable to decode the message.")
+
+    return data_dict.get("message", "")
