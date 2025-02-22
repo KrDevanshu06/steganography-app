@@ -61,10 +61,6 @@ steganography_app/
 - Navigate to the **Encode Message** or **Decode Message** section from the sidebar.
 - Follow the on-screen instructions to upload images and encode or decode messages.
 
-## License
-
-This project is licensed under the MIT License.
-
 ---
 
 ### `images/` Folder
